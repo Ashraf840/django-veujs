@@ -111,14 +111,14 @@ class ListProductView(generic.TemplateView):
 
             print("filtration query:", filtration_query)
 
-            # # Any single query value  [Original Query Build Algo]
-            # filtration_query = (
-            #     (Q(productvariantprice__product__title__icontains=product_title) if product_title else Q())
-            #     | ((Q(productvariantprice__product_variant_one__variant__pk=variant_id) | Q(productvariantprice__product_variant_two__variant__pk=variant_id) | Q(productvariantprice__product_variant_three__variant__pk=variant_id)) if variant_id else Q())
-            #     | (Q(productvariantprice__price__gte=price_from) if price_from else Q())
-            #     | (Q(productvariantprice__price__lte=price_to) if price_to else Q())
-            #     | (Q(productvariantprice__product__created_at__gte=product_enlisted_after_date) if product_enlisted_after_date else Q())
-            # )
+            # Any single query value  [Original Query Build Algorithm]
+            filtration_query = (
+                (Q(productvariantprice__product__title__icontains=product_title) if product_title else Q())
+                | ((Q(productvariantprice__product_variant_one__variant__pk=variant_id) | Q(productvariantprice__product_variant_two__variant__pk=variant_id) | Q(productvariantprice__product_variant_three__variant__pk=variant_id)) if variant_id else Q())
+                | (Q(productvariantprice__price__gte=price_from) if price_from else Q())
+                | (Q(productvariantprice__price__lte=price_to) if price_to else Q())
+                | (Q(productvariantprice__product__created_at__gte=product_enlisted_after_date) if product_enlisted_after_date else Q())
+            )
 
             filtered_products = Product.objects.filter(filtration_query)
 
