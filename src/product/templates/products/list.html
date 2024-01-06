@@ -55,14 +55,26 @@
                 </thead>
 
                 <tbody>
-                {% for prod in products %}
-                <tr>
-                    <td> {{ forloop.counter }} </td>
-                    <td> {{ prod.title }} <br> Created at : {{ prod.created_at }}</td>
-                    <td style="width: 50%;"> {{ prod.description }} </td>
-                    <td>
-                        <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant">
+
+                    {% for key, prod in prod_dict.items %}
+                    <tr>
+                        <td> {{ forloop.counter }} </td>
+                        <td> {{ prod.0.title }} <br> Created at : {{ prod.0.created_at }}</td>
+                        <td style="width: 50%;"> {{ prod.0.description }} </td>
+                        <td>
+                            <dl class="row mb-0" style="height: 140px; overflow: hidden" id="variant">
+                                {% for pvp in prod.1 %}
                                 <dt class="col-sm-3 pb-0">
+                                    XL/ Black/ Full
+                                </dt>
+                                <dd class="col-sm-9">
+                                    <dl class="row mb-0">
+                                        <dd class="col-sm-4 pb-0">Price : {{ pvp.price }}</dd>
+                                        <dd class="col-sm-8 pb-0">InStock : {{ pvp.stock }}</dd>
+                                    </dl>
+                                </dd>
+                                {% endfor %}
+                                {% comment %} <dt class="col-sm-3 pb-0">
                                     XL/ Black/ Full
                                 </dt>
                                 <dd class="col-sm-9">
@@ -70,45 +82,75 @@
                                         <dd class="col-sm-4 pb-0">Price : 200.0</dd>
                                         <dd class="col-sm-8 pb-0">InStock : 50.</dd>
                                     </dl>
-                                </dd>
-                                <dt class="col-sm-3 pb-0">
-                                    XL/ Black/ Half
-                                </dt>
-                                <dd class="col-sm-9">
-                                    <dl class="row mb-0">
-                                        <dd class="col-sm-4 pb-0">Price : 200.0</dd>
-                                        <dd class="col-sm-8 pb-0">InStock : 50.</dd>
-                                    </dl>
-                                </dd>
-                                <dt class="col-sm-3 pb-0">
-                                    L/ Black/ Full
-                                </dt>
-                                <dd class="col-sm-9">
-                                    <dl class="row mb-0">
-                                        <dd class="col-sm-4 pb-0">Price : 200.0</dd>
-                                        <dd class="col-sm-8 pb-0">InStock : 50.</dd>
-                                    </dl>
-                                </dd>
-                                <dt class="col-sm-3 pb-0">
-                                    L/ Black/ Half
-                                </dt>
-                                <dd class="col-sm-9">
-                                    <dl class="row mb-0">
-                                        <dd class="col-sm-4 pb-0">Price : 200.0</dd>
-                                        <dd class="col-sm-8 pb-0">InStock : 50.</dd>
-                                    </dl>
-                                </dd>
+                                </dd> {% endcomment %}
                             </dl>
-                        <button onclick="$('#variant').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more
-                        </button>
-                    </td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <a href="" class="btn btn-success">Edit</a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
+                            <button onclick="$('#variant').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more
+                            </button>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="" class="btn btn-success">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                
+                {% comment %}
+                    {% for prod in products %}
+                    <tr>
+                        <td> {{ forloop.counter }} </td>
+                        <td> {{ prod.title }} <br> Created at : {{ prod.created_at }}</td>
+                        <td style="width: 50%;"> {{ prod.description }} </td>
+                        <td>
+                            <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant">
+                                    <dt class="col-sm-3 pb-0">
+                                        XL/ Black/ Full
+                                    </dt>
+                                    <dd class="col-sm-9">
+                                        <dl class="row mb-0">
+                                            <dd class="col-sm-4 pb-0">Price : 200.0</dd>
+                                            <dd class="col-sm-8 pb-0">InStock : 50.</dd>
+                                        </dl>
+                                    </dd>
+                                    <dt class="col-sm-3 pb-0">
+                                        XL/ Black/ Half
+                                    </dt>
+                                    <dd class="col-sm-9">
+                                        <dl class="row mb-0">
+                                            <dd class="col-sm-4 pb-0">Price : 200.0</dd>
+                                            <dd class="col-sm-8 pb-0">InStock : 50.</dd>
+                                        </dl>
+                                    </dd>
+                                    <dt class="col-sm-3 pb-0">
+                                        L/ Black/ Full
+                                    </dt>
+                                    <dd class="col-sm-9">
+                                        <dl class="row mb-0">
+                                            <dd class="col-sm-4 pb-0">Price : 200.0</dd>
+                                            <dd class="col-sm-8 pb-0">InStock : 50.</dd>
+                                        </dl>
+                                    </dd>
+                                    <dt class="col-sm-3 pb-0">
+                                        L/ Black/ Half
+                                    </dt>
+                                    <dd class="col-sm-9">
+                                        <dl class="row mb-0">
+                                            <dd class="col-sm-4 pb-0">Price : 200.0</dd>
+                                            <dd class="col-sm-8 pb-0">InStock : 50.</dd>
+                                        </dl>
+                                    </dd>
+                                </dl>
+                            <button onclick="$('#variant').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more
+                            </button>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="" class="btn btn-success">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endcomment %}
                 </tbody>
 
             </table>

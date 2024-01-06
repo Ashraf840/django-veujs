@@ -23,14 +23,29 @@ class ListProductView(generic.TemplateView):
 
         # product_variants = ProductVariant.objects.prefetch_related('prices').filter(product=product)
 
-        productVariantPrice = [Product.objects.filter(productvariantprice__product=prod) for prod in product_list]
+        # productVariantPrice = [Product.objects.filter(productvariantprice__product=prod) for prod in product_list]
+        productVariantPrice = [ProductVariantPrice.objects.filter(product=prod) for prod in product_list]
 
-        for pvp in productVariantPrice:
-            print(pvp)
+
+        # for pvp in productVariantPrice:
+        #     print(pvp)
         
         print("###")
 
-        # prod_dict = { id: [prod, ] for id, prod in enumerate(product_list) }
-        for prod in product_list:
-            print(prod)
+        prod_dict = { id: [ prod, 
+            # {'product_variant_price': [pvp for pvp in Product.objects.filter(productvariantprice__product=prod)]} 
+            # {'product_variant_price': [pvp for pvp in ProductVariantPrice.objects.filter(product=prod)]} 
+            [pvp for pvp in ProductVariantPrice.objects.filter(product=prod)]
+            ] for id, prod in enumerate(product_list) }
+        
+        for key, prod in prod_dict.items():
+            print(f"Key: {key}, prod: {prod}")
+            for j in prod[1]:
+                print('pvp:', j, 'price:', j.price)
+                # print('pvp:', j)
+
+        # for prod in product_list:
+        #     print(prod)
+            
+        context['prod_dict'] = prod_dict
         return context
