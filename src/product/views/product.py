@@ -1,6 +1,7 @@
 from django.views import generic
 
 from product.models import Variant, Product, ProductVariant, ProductVariantPrice
+from django.core.paginator import Paginator
 
 
 class CreateProductView(generic.TemplateView):
@@ -21,16 +22,24 @@ class ListProductView(generic.TemplateView):
         product_list = Product.objects.all()
         context['products'] = product_list
 
+        page = self.request.GET.get('page', 1)
+        items_per_page = 2
+        paginator = Paginator(product_list, items_per_page)
+        paginated_data = paginator.get_page(page)
+
+        context['paginated_data'] = paginated_data
+
+
         # product_variants = ProductVariant.objects.prefetch_related('prices').filter(product=product)
 
         # productVariantPrice = [Product.objects.filter(productvariantprice__product=prod) for prod in product_list]
         productVariantPrice = [ProductVariantPrice.objects.filter(product=prod) for prod in product_list]
 
 
-        for pvp in productVariantPrice:
-            print(pvp)
+        # for pvp in productVariantPrice:
+        #     print(pvp)
         
-        print("###")
+        # print("###")
 
         prod_dict = { id: [ prod, 
             # {'product_variant_price': [pvp for pvp in Product.objects.filter(productvariantprice__product=prod)]} 

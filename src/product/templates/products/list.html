@@ -159,14 +159,37 @@
     </div>
 
     <div class="card-footer">
-        <div class="row justify-content-between">
+        <div class="row">
+            <div class="col pl-3">
+                <span class="step-links">
+                    <span class="current">
+                        Showing {{ paginated_data.number }} out of {{ paginated_data.paginator.num_pages }}.
+                    </span>
+                </span>
+            </div>
+            <div class="col text-right pr-5">
+                {% if paginated_data.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ paginated_data.previous_page_number }}">previous</a>
+                {% endif %}
+
+                {% if paginated_data.has_next %}
+                    <a href="?page={{ paginated_data.next_page_number }}">next</a>
+                    <a href="?page={{ paginated_data.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="pagination">
+            
+          </div>
+        {% comment %} <div class="row justify-content-between">
             <div class="col-md-6">
                 <p>Showing 1 to 10 out of 100</p>
             </div>
             <div class="col-md-2">
 
             </div>
-        </div>
+        </div> {% endcomment %}
     </div>
 </div>
 {% endblock %}
