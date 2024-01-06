@@ -10,15 +10,18 @@
 
 
 <div class="card">
-    <form action="" method="get" class="card-header">
+    <form action="#" method="POST" class="card-header">
+        {% csrf_token %}
         <div class="form-row justify-content-between">
             <div class="col-md-2">
                 <input type="text" name="title" placeholder="Product Title" class="form-control">
             </div>
             <div class="col-md-2">
-                <select name="variant" id="" class="form-control">
+                <select name="variant_select" id="variant_select" class="form-control">
                     <option selected disabled>--Select A Variant--</option>
-
+                    {% for var in variants %}
+                    <option value="{{ var.id }}">{{ var }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
