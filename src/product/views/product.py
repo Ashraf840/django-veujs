@@ -3,6 +3,9 @@ from django.views import generic
 from product.models import Variant, Product, ProductVariant, ProductVariantPrice
 from django.core.paginator import Paginator
 from django.shortcuts import render
+from django.urls import reverse
+from django.shortcuts import redirect
+from django.db.models import Q
 
 
 class CreateProductView(generic.TemplateView):
@@ -40,7 +43,7 @@ class ListProductView(generic.TemplateView):
         # product_variants = ProductVariant.objects.prefetch_related('prices').filter(product=product)
 
         # productVariantPrice = [Product.objects.filter(productvariantprice__product=prod) for prod in product_list]
-        productVariantPrice = [ProductVariantPrice.objects.filter(product=prod) for prod in product_list]
+        # productVariantPrice = [ProductVariantPrice.objects.filter(product=prod) for prod in product_list]
 
 
         # for pvp in productVariantPrice:
@@ -66,7 +69,7 @@ class ListProductView(generic.TemplateView):
         context['prod_dict'] = prod_dict
         return context
 
-    def post(self, request):
+    def post(self, request, **kwargs):
         print("This is a post request")
         product_title = request.POST.get('title')
         variant_id = request.POST.get('variant_select')
@@ -79,11 +82,48 @@ class ListProductView(generic.TemplateView):
         price_to = price_to if len(price_to) != 0 else None
         product_enlisted_after_date = product_enlisted_after_date if len(product_enlisted_after_date) != 0 else None
 
-        # print("Product Title:", product_title)
-        # print("variant_id:", variant_id)
-        # print("price_from:", price_from)
-        # print("price_to:", price_to)
-        # print("product_enlisted_after_date:", product_enlisted_after_date)
+        print("Product Title:", product_title)
+        print("variant_id:", variant_id)
+        print("price_from:", price_from)
+        print("price_to:", price_to)
+        print("product_enlisted_after_date:", product_enlisted_after_date)
+
+        if product_title == None and \
+            variant_id == None and \
+            price_from == None and \
+            price_to == None and \
+            product_enlisted_after_date == None:
+            # print("SHow entire product list!")
+            return redirect(reverse('product:list.product'))
+        else:
+            print("Make filtration!")
+            # variant = Variant.objects.get(id=variant_id)
+            # print("Variant:", variant.title)
+
+            # Any single query value
+            filtration_query = (
+                (Q(productvariantprice__product__title__icontains=product_title) if product_title else Q())
+                | ((Q(productvariantprice__product_variant_one__variant__pk=variant_id) | Q(productvariantprice__product_variant_two__variant__pk=variant_id) | Q(productvariantprice__product_variant_three__variant__pk=variant_id)) if variant_id else Q())
+                | (Q(productvariantprice__price__gte=price_from) if price_from else Q())
+                | (Q(productvariantprice__price__lte=price_to) if price_to else Q())
+                | (Q(productvariantprice__product__created_at__gte=product_enlisted_after_date) if product_enlisted_after_date else Q())
+                # | (Q(productvariant__variant__id=variant_id) & Q(name__icontains=keyword))
+            )
+
+            filtered_products = Product.objects.filter(filtration_query)
+
+            # filtration_query = (
+            #     Q(productvariantprice__product__title__icontains=product_title) 
+            #     | Q(productvariantprice__product_variant_two__variant__title=variant.title)
+            #     # | (Q(productvariant__variant__id=variant_id) & Q(name__icontains=keyword))
+            # )
+
+            # filtered_products = ProductVariantPrice.objects.filter(filtration_query)
+
+            print("Query-result-length:", len(filtered_products))
+
+            for fp in filtered_products:
+                print(fp)
         
         # print("Product Title (Datatype):", len(product_title))
         return render(request, self.template_name)
