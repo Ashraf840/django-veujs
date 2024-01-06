@@ -5,7 +5,8 @@ from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.urls import reverse
 from django.shortcuts import redirect
-from django.db.models import Q
+from product.helper_function.product_filtration_algorithm import filtration_cursor
+from django.db.models import Q  # Required for testing in this file
 
 
 class CreateProductView(generic.TemplateView):
@@ -82,11 +83,11 @@ class ListProductView(generic.TemplateView):
         price_to = price_to if len(price_to) != 0 else None
         product_enlisted_after_date = product_enlisted_after_date if len(product_enlisted_after_date) != 0 else None
 
-        print("Product Title:", product_title)
-        print("variant_id:", variant_id)
-        print("price_from:", price_from)
-        print("price_to:", price_to)
-        print("product_enlisted_after_date:", product_enlisted_after_date)
+        # print("Product Title:", product_title)
+        # print("variant_id:", variant_id)
+        # print("price_from:", price_from)
+        # print("price_to:", price_to)
+        # print("product_enlisted_after_date:", product_enlisted_after_date)
 
         if product_title == None and \
             variant_id == None and \
@@ -100,18 +101,28 @@ class ListProductView(generic.TemplateView):
             # variant = Variant.objects.get(id=variant_id)
             # print("Variant:", variant.title)
 
-            # Any single query value
-            filtration_query = (
-                (Q(productvariantprice__product__title__icontains=product_title) if product_title else Q())
-                | ((Q(productvariantprice__product_variant_one__variant__pk=variant_id) | Q(productvariantprice__product_variant_two__variant__pk=variant_id) | Q(productvariantprice__product_variant_three__variant__pk=variant_id)) if variant_id else Q())
-                | (Q(productvariantprice__price__gte=price_from) if price_from else Q())
-                | (Q(productvariantprice__price__lte=price_to) if price_to else Q())
-                | (Q(productvariantprice__product__created_at__gte=product_enlisted_after_date) if product_enlisted_after_date else Q())
-                # | (Q(productvariant__variant__id=variant_id) & Q(name__icontains=keyword))
+            filtration_query = filtration_cursor(
+                product_title=product_title,
+                variant_id=variant_id,
+                price_from=price_from,
+                price_to=price_to,
+                product_enlisted_after_date=product_enlisted_after_date
             )
+
+            print("filtration query:", filtration_query)
+
+            # # Any single query value  [Original Query Build Algo]
+            # filtration_query = (
+            #     (Q(productvariantprice__product__title__icontains=product_title) if product_title else Q())
+            #     | ((Q(productvariantprice__product_variant_one__variant__pk=variant_id) | Q(productvariantprice__product_variant_two__variant__pk=variant_id) | Q(productvariantprice__product_variant_three__variant__pk=variant_id)) if variant_id else Q())
+            #     | (Q(productvariantprice__price__gte=price_from) if price_from else Q())
+            #     | (Q(productvariantprice__price__lte=price_to) if price_to else Q())
+            #     | (Q(productvariantprice__product__created_at__gte=product_enlisted_after_date) if product_enlisted_after_date else Q())
+            # )
 
             filtered_products = Product.objects.filter(filtration_query)
 
+            # # Deprecated ################################
             # filtration_query = (
             #     Q(productvariantprice__product__title__icontains=product_title) 
             #     | Q(productvariantprice__product_variant_two__variant__title=variant.title)
@@ -119,6 +130,7 @@ class ListProductView(generic.TemplateView):
             # )
 
             # filtered_products = ProductVariantPrice.objects.filter(filtration_query)
+            # # ###########################################
 
             print("Query-result-length:", len(filtered_products))
 
@@ -126,5 +138,11 @@ class ListProductView(generic.TemplateView):
                 print(fp)
         
         # print("Product Title (Datatype):", len(product_title))
-        return render(request, self.template_name)
+        context = super().get_context_data(**kwargs)
+        variants = Variant.objects.filter(active=True)
+        context['variants'] = variants
+        return render(request, self.template_name, context=context)
+
+    
+
 
