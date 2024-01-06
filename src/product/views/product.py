@@ -27,8 +27,8 @@ class ListProductView(generic.TemplateView):
         productVariantPrice = [ProductVariantPrice.objects.filter(product=prod) for prod in product_list]
 
 
-        # for pvp in productVariantPrice:
-        #     print(pvp)
+        for pvp in productVariantPrice:
+            print(pvp)
         
         print("###")
 

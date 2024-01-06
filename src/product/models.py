@@ -49,5 +49,20 @@ class ProductVariantPrice(TimeStampMixin):
     stock = models.FloatField()
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
+    def __repr__(self):
+        variant_one_title = self.product_variant_one.variant_title if self.product_variant_one else "N/A"
+        variant_two_title = self.product_variant_two.variant_title if self.product_variant_two else "N/A"
+        variant_three_title = self.product_variant_three.variant_title if self.product_variant_three else "N/A"
+
+        return f"{variant_one_title} / " \
+               f"{variant_two_title} / " \
+               f"{variant_three_title}"
+        
+        
+        # return f"{self.product_variant_one} / \
+        #     {self.product_variant_two} / \
+        #     {self.product_variant_three}"
+
     def __str__(self):
+        return self.__repr__()
         return f'{self.product.title}: ({self.product_variant_one}, {self.product_variant_two}, {self.product_variant_three})'
