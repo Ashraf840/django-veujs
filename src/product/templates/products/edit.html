@@ -1,0 +1,84 @@
+{% extends 'backend/base.html' %}
+
+{% block title %} Edit Product {% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Edit Product</h1>
+    <a href="{% url 'product:list.product' %}" class="float-right btn btn-primary">All Product</a>
+</div>
+
+<section>
+    <form action="{% url 'product:edit.product' product.id %}" method="POST" class="product-edit-form">
+        {% csrf_token %}
+        <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="form-group">
+                <label for="">Product Name</label>
+                <input type="text" name="product_name" value="{{ product.title }}" class="form-control">
+                </div>
+                <div class="form-group">
+                <label for="">Product SKU</label>
+                <input type="text" name="product_sku" value="{{ product.sku }}" class="form-control">
+                </div>
+                <div class="form-group">
+                <label for="">Description</label>
+                <textarea name="description" id="" cols="30" rows="4" class="form-control">{{ product.description }}</textarea>
+                </div>
+            </div>
+            </div>
+
+            <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Media</h6>
+            </div>
+            <div class="card-body border">
+                <vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions"></vue-dropzone>
+            </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Variants Prices & Stocks</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                    <td>Variant</td>
+                    <td>Price</td>
+                    <td>Stock</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for variant in variants %}
+                        <tr v-for="variant_price in product_variant_prices">
+                        <td>{{ variant }}</td>
+                        <td>
+                            <input type="number" name="productVariantPriceID" class="form-control" value="{{ variant.id }}" hidden>
+                            <input type="number" name="productVariantPrice" class="form-control" value="{{ variant.price }}">
+                        </td>
+                        <td>
+                            <input type="number" name="productVariantStock" class="form-control" value="{{ variant.stock }}">
+                        </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <button @click="saveProduct" type="submit" class="btn btn-lg btn-primary">Save Change</button>
+        <button type="button" class="btn btn-secondary btn-lg">Cancel</button>
+    </form>
+  </section>
+
+{% endblock %}

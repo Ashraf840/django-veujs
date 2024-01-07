@@ -284,5 +284,60 @@ class ListProductView(generic.TemplateView):
             return render(request, self.template_name, context=context)
 
     
+# @method_decorator(ensure_csrf_cookie, name='dispatch')
+class EditProductView(generic.TemplateView):
+    template_name = 'products/edit.html'
 
+    def get_context_data(self, id, **kwargs):
+        context = super(EditProductView, self).get_context_data(**kwargs)
+        product = Product.objects.get(id=id)
+        # variants = Variant.objects.filter(active=True).values('id', 'title')
+        productVariantPrice = ProductVariantPrice.objects.filter(product=product)
+        context['product'] = product
+        # context['variants'] = list(variants.all())
+        print("product id:", id)
+        print("productVariantPrice:", productVariantPrice)
+        context['variants'] = productVariantPrice
+        return context
+        return render(request, self.template_name, context=context)
 
+    def post(self, request, id):
+        print("Post request to edit the product information & then redirect the user to product list page")
+        print("product id (edit):", id)
+        # print("product title (edit):", request.POST.get("product_name"))
+        # print("product sku (edit):", request.POST.get("product_sku"))
+        # print("product description (edit):", request.POST.get("description")[:100])
+        title = request.POST.get("product_name")
+        sku = request.POST.get("product_sku")
+        description = request.POST.get("description")
+        product = Product.objects.get(id=id)
+        product.title = title
+        product.sku = sku
+        product.description = description
+        product.save()
+
+        productVariantPriceList = request.POST.getlist('productVariantPrice')
+        productVariantPriceIDList = request.POST.getlist('productVariantPriceID')
+        productVariantStockList = request.POST.getlist('productVariantStock')
+
+        print("product variant prices IDs (edit):", productVariantPriceIDList)
+        print("product variant prices (edit):", productVariantPriceList)
+        print("product variant stocks (edit):", productVariantStockList)
+
+        productVariantPriceZip = list(zip(
+            productVariantPriceIDList, 
+            productVariantPriceList, 
+            productVariantStockList
+        ))
+
+        # print("productVariantPriceZip:", productVariantPriceZip)
+        print("productVariantPriceZip")
+        for pvpz in productVariantPriceZip:
+            pvp = ProductVariantPrice.objects.get(id=int(pvpz[0]))
+            pvp.price = float(pvpz[1])
+            pvp.stock = float(pvpz[2])
+            pvp.save()
+            # print(pvpz)
+
+        
+        return redirect('product:list.product')
