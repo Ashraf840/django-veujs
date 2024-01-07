@@ -134,14 +134,31 @@ class ListProductView(generic.TemplateView):
 
             print("Query-result-length:", len(filtered_products))
 
+            product_list = []
+
             for fp in filtered_products:
-                print(fp)
+                if fp not in product_list:
+                    product_list.append(fp)
+                    # print(fp)
+            
+            # print("product_list:", product_list)
+            page = self.request.GET.get('page', 1)
+            items_per_page = 2
+            paginator = Paginator(product_list, items_per_page)
+            paginated_data = paginator.get_page(page)
+
+            
+            prod_dict = { id: [ prod, 
+            [pvp for pvp in ProductVariantPrice.objects.filter(product=prod)]
+            ] for id, prod in enumerate(product_list) }
         
-        # print("Product Title (Datatype):", len(product_title))
-        context = super().get_context_data(**kwargs)
-        variants = Variant.objects.filter(active=True)
-        context['variants'] = variants
-        return render(request, self.template_name, context=context)
+            # print("Product Title (Datatype):", len(product_title))
+            context = super().get_context_data(**kwargs)
+            variants = Variant.objects.filter(active=True)
+            context['variants'] = variants
+            context['prod_dict'] = prod_dict
+            context['paginated_data'] = paginated_data
+            return render(request, self.template_name, context=context)
 
     
 
