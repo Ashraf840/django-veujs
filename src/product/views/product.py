@@ -7,8 +7,13 @@ from django.urls import reverse
 from django.shortcuts import redirect
 from product.helper_function.product_filtration_algorithm import filtration_cursor
 from django.db.models import Q  # Required for testing in this file
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
+import json
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class CreateProductView(generic.TemplateView):
     template_name = 'products/create.html'
 
@@ -18,6 +23,124 @@ class CreateProductView(generic.TemplateView):
         context['product'] = True
         context['variants'] = list(variants.all())
         return context
+
+    def createProductVariantPrice(self, request, product, pv_one=None, pv_two=None, pv_three=None, price=0, stock=0, **kwargs):
+        print("Create product!")
+        print("product:", product)
+        print("pv_one:", pv_one, "; type:", type(pv_one))
+        print("pv_two:", pv_two, "; type:", type(pv_two))
+        print("pv_three:", pv_three, "; type:", type(pv_three))
+        print("price:", price)
+        print("stock:", stock)
+
+        ProductVariantPrice.objects.create(
+            product_variant_one=pv_one,
+            product_variant_two=pv_two,
+            product_variant_three=pv_three,
+            price=price,
+            stock=stock,
+            product=product,
+        )
+        self.context = super(CreateProductView, self).get_context_data(**kwargs)
+        variants = Variant.objects.filter(active=True).values('id', 'title')
+        self.context['product'] = True
+        self.context['variants'] = list(variants.all())
+        return render(request, self.template_name, context=self.context)
+        pass
+
+    def post(self, request):
+        print("Created post request!")
+        received_json_data = request.body.decode('utf-8')
+        received_json_data = json.loads(received_json_data)
+        # return JsonResponse({'msg': 'Created post request!'})
+
+        product_title = received_json_data.get('title')
+        sku = received_json_data.get('sku')
+        description = received_json_data.get('description')
+
+        # Prohibit from leaving the product-name & sku empty before creating product record in db
+        if len(product_title) and len(sku):
+            # Create product instance
+            product = Product.objects.create(
+                title=product_title,
+                sku=sku,
+                description=description
+            )
+        else:
+            return JsonResponse({'msg': 'Please provide a product-title & sku!'})
+
+        product_image = received_json_data.get('product_image')     # not working on uploading image
+        
+        # # Create product variant instances
+        product_variant = received_json_data.get('product_variant')
+        print("product_variant:", product_variant)
+        # Check if the prodcut contains the new-record-queryset before creating it's variant
+        if product:
+            print("Product queryset is not empty.")
+            for prod_var in product_variant:
+                # print(prod_var.get('option'), prod_var.get('tags'), ":", end=" ")
+                variant = Variant.objects.get(id=prod_var.get('option'))
+                if len(prod_var.get('tags')):
+                    # print("Iterate tags!")
+                    # print(Variant.objects.get(id=prod_var.get('option')))
+                    
+                    ProductVariant.objects.create(
+                        variant_title=' -- '.join(tag for tag in prod_var.get('tags')),
+                        # variant_title=[tag for tag in prod_var.get('tags')],
+                        variant=variant,
+                        product=product,
+                    )
+                    # for tag in prod_var.get('tags'):
+                    #     # print(tag)
+        else:
+            print("Product queryset is empty or None.")
+            return JsonResponse({'msg': 'Product record is not created in the db!'})
+        
+        product_variant_prices = received_json_data.get('product_variant_prices')
+        # Create product variant price instance
+        prodcut_variants = ProductVariant.objects.filter(product=product)
+        print("prodcut_variants:", prodcut_variants)
+
+        if len(prodcut_variants) == 3:
+            # print("3 Product variant instances!", product_variant[0], product_variant[1], product_variant[2])
+            self.createProductVariantPrice(
+                request,
+                product=product, 
+                pv_one=prodcut_variants[0],
+                pv_two=prodcut_variants[1],
+                pv_three=prodcut_variants[2],
+                price=product_variant_prices[0].get('price'),
+                stock=product_variant_prices[0].get('stock'),
+            )
+        if len(prodcut_variants) == 2:
+            # print("2 Product variant instances!", prodcut_variants[0], prodcut_variants[1])
+            # print("type:", type(prodcut_variants[0]))
+            self.createProductVariantPrice(
+                request,
+                product=product, 
+                pv_one=prodcut_variants[0],
+                pv_two=prodcut_variants[1],
+                price=product_variant_prices[0].get('price'),
+                stock=product_variant_prices[0].get('stock'),
+            )
+        if len(prodcut_variants) == 1:
+            # print("1 Product variant instances!", prodcut_variants[0])
+            self.createProductVariantPrice(
+                request,
+                product=product, 
+                pv_one=prodcut_variants[0],
+                price=product_variant_prices[0].get('price'),
+                stock=product_variant_prices[0].get('stock'),
+            )
+        
+        
+
+        
+
+        # print("Product Title:", received_json_data)
+
+        return JsonResponse({'msg': 'Created post request!'})
+        return redirect(reverse('product:list.product'))
 
 class ListProductView(generic.TemplateView):
     template_name = 'products/list.html'

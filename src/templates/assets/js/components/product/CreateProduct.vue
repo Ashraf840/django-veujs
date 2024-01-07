@@ -180,6 +180,9 @@ export default {
 
     // store product into database
     saveProduct() {
+      console.log(`Clicking the "Save" button!`);
+      //console.log(`Product Title:`, this.product_name);
+      console.log(`Product Images:`, this.images);
       let product = {
         title: this.product_name,
         sku: this.product_sku,
@@ -189,9 +192,12 @@ export default {
         product_variant_prices: this.product_variant_prices
       }
 
+      axios.defaults.xsrfCookieName = 'csrftoken';
+      axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
-      axios.post('/product', product).then(response => {
+      axios.post('/product/create/', product).then(response => {
         console.log(response.data);
+        //window.location.reload();
       }).catch(error => {
         console.log(error);
       })
